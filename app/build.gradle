@@ -38,6 +38,14 @@ android {
                 enableV4Signing = true
             }
         }
+
+        app {
+            //fixme laiks
+            keyAlias 'csjdemmo'
+            keyPassword 'bytedancecsjdemo'
+            storeFile file('open_ad_sdk.keystore')
+            storePassword 'bytedancecsjdemo'
+        }
     }
     defaultConfig {
         applicationId "io.legado.app"
@@ -283,4 +291,9 @@ dependencies {
 
     //com.github.AmrDeveloper:CodeView代码编辑已集成到应用内
     //epubLib集成到应用内
+
+    //广告SDK
+    implementation(fileTree(dir: 'adlib', include: ['*.jar', '*.aar']))
+    implementation 'androidx.fragment:fragment-ktx:1.6.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
 }

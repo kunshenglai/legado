@@ -3,7 +3,9 @@ package io.legado.app.ui.welcome
 import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
+import android.util.Log
 import androidx.core.view.postDelayed
+import com.bytedance.sdk.openadsdk.TTAdSdk.InitCallback
 import io.legado.app.base.BaseActivity
 import io.legado.app.constant.PreferKey
 import io.legado.app.constant.Theme
@@ -11,6 +13,8 @@ import io.legado.app.databinding.ActivityWelcomeBinding
 import io.legado.app.help.config.ThemeConfig
 import io.legado.app.lib.theme.accentColor
 import io.legado.app.lib.theme.backgroundColor
+import io.legado.app.model.ad.AdSdk
+import io.legado.app.model.ad.NativeAdManager
 import io.legado.app.ui.book.read.ReadBookActivity
 import io.legado.app.ui.main.MainActivity
 import io.legado.app.utils.*
@@ -21,6 +25,17 @@ open class WelcomeActivity : BaseActivity<ActivityWelcomeBinding>() {
     override val binding by viewBinding(ActivityWelcomeBinding::inflate)
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
+        AdSdk.init(this, object: InitCallback{
+            override fun success() {
+                Log.d("NativeAdManager", "ad sdk init success.")
+            }
+
+            override fun fail(p0: Int, p1: String?) {
+                Log.d("NativeAdManager", "ad sdk init fail.")
+            }
+
+        })
+
         binding.ivBook.setColorFilter(accentColor)
         binding.vwTitleLine.setBackgroundColor(accentColor)
         // 避免从桌面启动程序后，会重新实例化入口类的activity

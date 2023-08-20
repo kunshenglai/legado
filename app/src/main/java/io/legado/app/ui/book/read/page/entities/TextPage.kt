@@ -2,6 +2,7 @@ package io.legado.app.ui.book.read.page.entities
 
 import android.text.Layout
 import android.text.StaticLayout
+import android.view.View
 import androidx.annotation.Keep
 import io.legado.app.R
 import io.legado.app.help.config.ReadBookConfig
@@ -27,7 +28,9 @@ data class TextPage(
     var chapterSize: Int = 0,
     var chapterIndex: Int = 0,
     var height: Float = 0f,
-    var leftLineSize: Int = 0
+    var leftLineSize: Int = 0,
+    var isAdPage: Boolean = false,
+    var adView: View? = null
 ) {
 
     val lines: List<TextLine> get() = textLines

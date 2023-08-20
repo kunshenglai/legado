@@ -4,15 +4,25 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
+import com.bytedance.sdk.openadsdk.TTFeedAd
+import com.bytedance.sdk.openadsdk.TTNativeAd
+import com.bytedance.sdk.openadsdk.TTNativeAd.AdInteractionListener
+import com.bytedance.sdk.openadsdk.mediation.ad.MediationExpressRenderListener
+import com.bytedance.sdk.openadsdk.mediation.manager.MediationNativeManager
 import io.legado.app.constant.AppConst.timeFormat
 import io.legado.app.data.entities.Bookmark
 import io.legado.app.databinding.ViewBookPageBinding
 import io.legado.app.help.config.ReadBookConfig
 import io.legado.app.help.config.ReadTipConfig
 import io.legado.app.model.ReadBook
+import io.legado.app.model.ad.NativeAdManager
+import io.legado.app.model.ad.NativeAdManager.IAdListener
+import io.legado.app.model.ad.utils.FeedAdUtils
 import io.legado.app.ui.book.read.ReadBookActivity
 import io.legado.app.ui.book.read.page.entities.TextPage
 import io.legado.app.ui.book.read.page.entities.TextPos
@@ -21,6 +31,7 @@ import io.legado.app.ui.widget.BatteryView
 import io.legado.app.utils.*
 import splitties.views.backgroundColor
 import java.util.*
+
 
 /**
  * 页面视图
@@ -276,7 +287,91 @@ class PageView(context: Context) : FrameLayout(context) {
         if (resetPageOffset) {
             resetPageOffset()
         }
-        binding.contentTextView.setContent(textPage)
+        if (textPage.isAdPage) {
+            binding.pageAdContainner.visibility = VISIBLE
+            binding.contentTextView.visibility = GONE
+            updateAdContent(textPage, binding.pageAdContainner)
+        } else {
+            binding.pageAdContainner.visibility = GONE
+            binding.contentTextView.visibility = VISIBLE
+            binding.contentTextView.setContent(textPage)
+        }
+    }
+
+    private fun updateAdContent(textPage: TextPage, adContainerView: View) {
+        if (adContainerView !is FrameLayout) {
+            return
+        }
+        if (textPage.adView == null) {
+            NativeAdManager.getInstance().getAd(this.context, object : IAdListener {
+                override fun onAdLoaded(ad: TTFeedAd) {
+                    /** 5、展示广告 */
+                    /** 5、展示广告  */
+                    val manager: MediationNativeManager = ad.mediationManager
+                    if (manager.isExpress) { // --- 模板feed流广告
+                        ad.setExpressRenderListener(object : MediationExpressRenderListener {
+                            override fun onRenderSuccess(
+                                adView: View?,
+                                p1: Float,
+                                p2: Float,
+                                p3: Boolean
+                            ) {
+                                adContainerView.removeAllViews()
+                                adView?.let {
+                                    adContainerView.addView(it)
+                                    textPage.adView = it
+                                }
+                            }
+
+                            override fun onRenderFail(p0: View?, p1: String?, p2: Int) {
+                            }
+
+                            override fun onAdClick() {
+                            }
+
+                            override fun onAdShow() {
+                            }
+                        })
+                        ad.render() // 调用render方法进行渲染，在onRenderSuccess中展示广告
+                    } else {                   // --- 自渲染feed流广告
+                        // 自渲染广告返回的是广告素材，开发者自己将其渲染成view
+                        val feedView: View = FeedAdUtils.getFeedAdFromFeedInfo(
+                            ad,
+                            adContainerView.activity,
+                            null,
+                            object : AdInteractionListener {
+                                override fun onAdClicked(p0: View?, p1: TTNativeAd?) {
+                                }
+
+                                override fun onAdCreativeClick(p0: View?, p1: TTNativeAd?) {
+                                }
+
+                                override fun onAdShow(p0: TTNativeAd?) {
+                                }
+
+                            }
+                        )
+
+                        feedView.let {
+                            adContainerView.removeAllViews()
+                            feedView.let {
+                                adContainerView.addView(it)
+                                textPage.adView = it
+                            }
+                        }
+                    }
+                }
+
+                override fun onError(errorCode: Int, errorMessage: String?) {
+                }
+            })
+        } else {
+            adContainerView.removeAllViews()
+            if (textPage.adView!!.parent is ViewGroup) {
+                (textPage.adView!!.parent as ViewGroup).removeAllViews()
+            }
+            adContainerView.addView(textPage.adView)
+        }
     }
 
     /**

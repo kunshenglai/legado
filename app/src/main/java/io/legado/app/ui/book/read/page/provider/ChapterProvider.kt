@@ -126,7 +126,7 @@ object ChapterProvider {
         val stringBuilder = StringBuilder()
         var absStartX = paddingLeft
         var durY = 0f
-        textPages.add(TextPage())
+        addPage(textPages)
         if (ReadBookConfig.titleMode != 2) {
             //标题非隐藏
             displayTitle.splitNotBlank("\n").forEach { text ->
@@ -246,7 +246,7 @@ object ChapterProvider {
                 textPage.height = durY
                 textPage.text = stringBuilder.toString().ifEmpty { "本页无文字内容" }
                 stringBuilder.clear()
-                textPages.add(TextPage())
+                addPage(textPages)
                 durY = 0f
             }
             var height = size.height
@@ -271,7 +271,7 @@ object ChapterProvider {
                         textPage.height = durY
                         textPage.text = stringBuilder.toString().ifEmpty { "本页无文字内容" }
                         stringBuilder.clear()
-                        textPages.add(TextPage())
+                        addPage(textPages)
                         durY = 0f
                     }
                 }
@@ -358,7 +358,7 @@ object ChapterProvider {
                     textPage.text = stringBuilder.toString()
                     textPage.height = durY
                     //新建页面
-                    textPages.add(TextPage())
+                    addPage(textPages)
                     stringBuilder.clear()
                     absStartX = paddingLeft
                 }
@@ -428,6 +428,19 @@ object ChapterProvider {
         }
         durY += textPaint.textHeight * paragraphSpacing / 10f
         return Pair(absStartX, durY)
+    }
+
+    private fun needInsertAdPage(currentIndex : Int): Boolean {
+        return currentIndex > 0 && currentIndex%4 == 0 //3页插入一个广告
+    }
+
+    private fun addPage(textPages: ArrayList<TextPage>): Unit {
+        if (needInsertAdPage(textPages.size)) {
+            val adTextPage = TextPage()
+            adTextPage.isAdPage = true
+            textPages.add(adTextPage)
+        }
+        textPages.add(TextPage())
     }
 
     /**
